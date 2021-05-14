@@ -1,5 +1,14 @@
 #!/bin/bash
 
+Usage () {
+  echo "$0 [<version>]" 1>&2
+  echo "where: version is one of:" 1>&2
+  echo "   {blank}:  use the most recent version" 1>&2
+  echo "   {major version}: use the most recent version, e.g. \"13\" = use the most recent 0.13.X" 1>&2
+  echo "   {major.minor version}: use the specific version, e.g. \"13.4\" = use version 0.13.4" 1>&2
+  exit 1
+}
+
 if [ -d tf-venv ];then
   echo "Directory tf-venv already exists" 1>&2
   exit 1
@@ -16,6 +25,7 @@ if [ -n "$1" ]; then
      ver="0."$ver
   else
     echo "Version must be in format X or X.Y" 1>&2
+    Usage
     exit 1
   fi
 else
@@ -24,6 +34,7 @@ fi
 tfver=$( curl -s https://releases.hashicorp.com/terraform/ | grep href | sed 's/.*>\(.*\)<.*/\1/' | grep terraform_ | grep ${ver//./\\.} | head -1 | sed 's/terraform_//' )
 if [ -z "${tfver}" ]; then
   echo "Unable to find terraform version" 1>&2
+  Usage
   exit 1
 fi
 
@@ -132,3 +143,5 @@ fi
 
 EOF
 chmod 755 tf-activate
+echo "Run: \"source tf-venv/tf-activate\" to activate"
+echo "Run: \"tf-deactivate\" to deactivate"
