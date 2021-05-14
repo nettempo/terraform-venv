@@ -62,7 +62,7 @@ cd tf-venv || exit 1
 curl -s -O https://releases.hashicorp.com/terraform/"${tfver}"/terraform_"${tfver}"_SHA256SUMS
 curl -s -O https://releases.hashicorp.com/terraform/"${tfver}"/terraform_"${tfver}"_"${ost}"_"${architecture}".zip
 grep ${ost}_${architecture} terraform_"${tfver}"_SHA256SUMS | sha256sum --check || exit 1
-unzip terraform_"${tfver}"_"${ost}"_"${architecture}".zip
+unzip -qq terraform_"${tfver}"_"${ost}"_"${architecture}".zip
 
 chmod 755 terraform
 
