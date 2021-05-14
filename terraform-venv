@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Tim Irvin, NetTempo, Inc.
+# irvin@nettempo.com
+# 5/14/2021
+# (c) 2021 NetTempo, Inc.
+#
+# MIT License
+#
+
 usage () {
   echo "$0 [<version>]" 1>&2
   echo "where: version is one of:" 1>&2
@@ -67,6 +75,9 @@ unzip -qq terraform_"${tfver}"_"${ost}"_"${architecture}".zip
 chmod 755 terraform
 
 cat >tf-activate <<-EOF 2> /dev/null
+# The following code is based on the virtualenv activation code from python
+# License: MIT License (MIT)
+# Original Author: Bernat Gabor (gaborjbernat@gmail.com)
 tf-deactivate () {
     # reset old environment variables
     if [ -n "\${_TFOLD_VIRTUAL_PATH:-}" ] ; then
