@@ -1,6 +1,6 @@
 # terraform-venv
 
-Creates a virtual terraform envirnment in your current directory, which allows you to run a specific version of terraform for a project.
+Creates a virtual terraform environment in your current directory, which allows you to run a specific version of terraform for a project.
 
 ## Instructions
 ### Setting up
