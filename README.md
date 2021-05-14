@@ -45,6 +45,28 @@ Your version of Terraform is out of date! The latest version
 is 0.15.3. You can update by downloading from https://www.terraform.io/downloads.html
 
 $ rm -rf tf-venv/
+
+$ terraform-venv 
+terraform_0.15.3_linux_amd64.zip: OK
+Archive:  terraform_0.15.3_linux_amd64.zip
+  inflating: terraform               
+  
+$ source tf-venv/tf-activate 
+
+(TF 0.15.3) $ terraform version
+Terraform v0.15.3
+on linux_amd64
+
+(TF 0.15.3) $ tf-deactivate 
+
+$ terraform version
+Terraform v0.12.29
+
+Your version of Terraform is out of date! The latest version
+is 0.15.3. You can update by downloading from https://www.terraform.io/downloads.html
+
+$ rm -rf tf-venv/
+
 ```
 
 
