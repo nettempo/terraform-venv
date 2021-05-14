@@ -17,6 +17,9 @@ Creates a virtual terraform environment in your current directory, which allows 
 
 ### Example:
 ```bash
+$ pwd
+/home/mydir/gitdir/my-great-terraform-project
+
 $ terraform version
 Terraform v0.12.29
 
