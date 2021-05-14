@@ -1,6 +1,6 @@
 # terraform-venv
 
-Creates a virtual terraform envirnment in your current directory, which allows you to run a specific version of terraform for this project.
+Creates a virtual terraform envirnment in your current directory, which allows you to run a specific version of terraform for a project.
 
 ## Instructions
 ### Setting up
@@ -29,11 +29,13 @@ Archive:  terraform_0.14.11_linux_amd64.zip
   inflating: terraform               
   
 $ source tf-venv/tf-activate 
+
 (TF 0.14.11) $ terraform version
 Terraform v0.14.11
 
 Your version of Terraform is out of date! The latest version
 is 0.15.3. You can update by downloading from https://www.terraform.io/downloads.html
+
 (TF 0.14.11) $ tf-deactivate 
 
 $ terraform version
