@@ -1,0 +1,134 @@
+#!/bin/bash
+
+if [ -d tf-venv ];then
+  echo "Directory tf-venv already exists" 1>&2
+  exit 1
+fi
+
+if [ -n "$1" ]; then
+  if [[ "$1" =~ ^[0-9\.]+$ ]]; then
+     ver=$1
+     if [[ $ver =~ \. ]]; then
+       :
+     else
+       ver=$ver"."
+     fi
+     ver="0."$ver
+  else
+    echo "Version must be in format X or X.Y" 1>&2
+    exit 1
+  fi
+else
+  ver="0."
+fi
+tfver=$( curl -s https://releases.hashicorp.com/terraform/ | grep href | sed 's/.*>\(.*\)<.*/\1/' | grep terraform_ | grep ${ver//./\\.} | head -1 | sed 's/terraform_//' )
+if [ -z "${tfver}" ]; then
+  echo "Unable to find terraform version" 1>&2
+  exit 1
+fi
+
+ost=""
+case "$OSTYPE" in
+  linux-gnu)  ost="linux" ;;
+  darwin*)    ost="darwin" ;;
+  cygwin)     ost="linux" ;;
+  msys)       ost="windows" ;;
+  win32)      ost="windows" ;;
+  freebsd)    ost="frebsd" ;;
+  *)          echo "Can't determine OS TYPE from $OSTYPE" 1>&2; exit 1;;
+esac
+architecture=""
+case $(uname -m) in
+  i386)   architecture="386" ;;
+  i686)   architecture="386" ;;
+  x86_64) architecture="amd64" ;;
+  arm)    dpkg --print-architecture | grep -q "arm64" && architecture="arm64" || architecture="arm" ;;
+  *)      echo "Can't determine architecture" 1>&2; exit 1;;
+esac
+
+mkdir tf-venv
+cd tf-venv || exit 1
+curl -s -O https://releases.hashicorp.com/terraform/"${tfver}"/terraform_"${tfver}"_SHA256SUMS
+curl -s -O https://releases.hashicorp.com/terraform/"${tfver}"/terraform_"${tfver}"_"${ost}"_"${architecture}".zip
+grep ${ost}_${architecture} terraform_"${tfver}"_SHA256SUMS | sha256sum --check || exit 1
+unzip terraform_"${tfver}"_"${ost}"_"${architecture}".zip
+
+chmod 755 terraform
+
+cat >tf-activate <<-EOF 2> /dev/null
+tf-deactivate () {
+    # reset old environment variables
+    if [ -n "\${_TFOLD_VIRTUAL_PATH:-}" ] ; then
+        PATH="\${_TFOLD_VIRTUAL_PATH:-}"
+        export PATH
+        unset _TFOLD_VIRTUAL_PATH
+    fi
+    if [ -n "\${_TFOLD_VIRTUAL_HOME:-}" ] ; then
+        TFHOME="\${_TFOLD_VIRTUAL_HOME:-}"
+        export TFHOME
+        unset _TFOLD_VIRTUAL_HOME
+    fi
+
+    # This should detect bash and zsh, which have a hash command that must
+    # be called to get it to forget past commands.  Without forgetting
+    # past commands the \$PATH changes we made may not be respected
+    if [ -n "\${BASH:-}" -o -n "\${ZSH_VERSION:-}" ] ; then
+        hash -r
+    fi
+
+    if [ -n "\${_TFOLD_VIRTUAL_PS1:-}" ] ; then
+        PS1="\${_TFOLD_VIRTUAL_PS1:-}"
+        export PS1
+        unset _TFOLD_VIRTUAL_PS1
+    fi
+
+    unset TF_VIRTUAL_ENV
+    if [ ! "\${1:-}" = "nondestructive" ] ; then
+    # Self destruct!
+        unset -f tf-deactivate
+    fi
+}
+
+# unset irrelevant variables
+tf-deactivate nondestructive
+
+TF_VIRTUAL_ENV="$PWD"
+export TF_VIRTUAL_ENV
+
+_TFOLD_VIRTUAL_PATH="\$PATH"
+PATH="\$TF_VIRTUAL_ENV:\$PATH"
+export PATH
+
+# unset TFHOME if set
+# this will fail if TFHOME is set to the empty string (which is bad anyway)
+# could use if (set -u; : \$TFHOME) ; in bash
+if [ -n "\${TFHOME:-}" ] ; then
+    _TFOLD_VIRTUAL_TFHOME="\${TFHOME:-}"
+    unset TFHOME
+fi
+
+if [ -z "\${VIRTUAL_ENV_DISABLE_PROMPT:-}" ] ; then
+    _TFOLD_VIRTUAL_PS1="\${PS1:-}"
+    if [ "x(TF " != x ] ; then
+	    PS1="(TF ${tfver}) \${PS1:-}"
+    else
+      if [ "\$(basename \"\$TF_VIRTUAL_ENV\")" = "__" ] ; then
+        # special case for Aspen magic directories
+        # see http://www.zetadev.com/software/aspen/
+        PS1="[\$(basename \`dirname \"\$TF_VIRTUAL_ENV\"\`)] \$PS1"
+      else
+        PS1="(\$(basename \"\$TF_VIRTUAL_ENV\"))\$PS1"
+      fi
+    fi
+    export PS1
+fi
+
+# This should detect bash and zsh, which have a hash command that must
+# be called to get it to forget past commands.  Without forgetting
+# past commands the \$PATH changes we made may not be respected
+if [ -n "\${BASH:-}" -o -n "\${ZSH_VERSION:-}" ] ; then
+    hash -r
+fi
+
+EOF
+chmod 755 tf-activate
