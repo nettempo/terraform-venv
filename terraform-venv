@@ -65,11 +65,16 @@ case $(uname -m) in
   *)      echo "Can't determine architecture" 1>&2; exit 1;;
 esac
 
+SHA256SUM_CHECK="sha256sum --check"
+if [ $ost = "darwin" ]; then
+   SHA256SUM_CHECK="shasum -a 256 -c"
+fi
+
 mkdir tf-venv
 cd tf-venv || exit 1
 curl -s -O https://releases.hashicorp.com/terraform/"${tfver}"/terraform_"${tfver}"_SHA256SUMS
 curl -s -O https://releases.hashicorp.com/terraform/"${tfver}"/terraform_"${tfver}"_"${ost}"_"${architecture}".zip
-grep ${ost}_${architecture} terraform_"${tfver}"_SHA256SUMS | sha256sum --check || exit 1
+grep ${ost}_${architecture} terraform_"${tfver}"_SHA256SUMS | ${SHA256SUM_CHECK} || exit 1
 unzip -qq terraform_"${tfver}"_"${ost}"_"${architecture}".zip
 
 chmod 755 terraform
