@@ -26,7 +26,7 @@ Terraform v0.12.29
 Your version of Terraform is out of date! The latest version
 is 0.15.3. You can update by downloading from https://www.terraform.io/downloads.html
 
-$ terraform-venv 14
+$ terraform-venv 0.14
 terraform_0.14.11_linux_amd64.zip: OK
 Archive:  terraform_0.14.11_linux_amd64.zip
   inflating: terraform               
@@ -75,5 +75,5 @@ $ rm -rf tf-venv/
 
 ## Version info
 * If no version is provided, then the most recent version of terraform will be used.
-* If only a major version number is provided, e.g. `terraform-venv 12`, then the most recent version in that major release will be used.
-* If a major.minor version number is provided, e.g. `terraform-venv 12.31`, then that specific version will be used.
+* If only a major version number is provided, e.g. `terraform-venv 0.12`, then the most recent version in that major release will be used.
+* If a major.minor version number is provided, e.g. `terraform-venv 0.12.31`, then that specific version will be used.
