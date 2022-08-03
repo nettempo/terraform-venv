@@ -1,19 +1,26 @@
 # terraform-venv
+(c) 2021-2022 NetTempo, Inc.  
+MIT License  
+see [LICENSE](LICENSE) for details
 
 Creates a virtual terraform environment in your current directory, which allows you to run a specific version of terraform for a project.
 
 ## Instructions
+### Installation
+1. Place the `terraform-venv` script from this repo in a directory in your `PATH`
+2. Set the execute-bit on this script: `chmod +x terraform-venv`
+
 ### Setting up
 1. Run: `terraform-venv <version>`
-1. Source: `source tf-venv/tf-activate`
-1. Verify: `terraform version`
+2. Source: `source tf-venv/tf-activate`
+3. Verify: `terraform version`
 
 ### Deactivating
 1. Run: `tf-deactivate`
-1. Verify: `terraform version`
+2. Verify: `terraform version`
 
 ### Cleanup
-1. Run: `rm -rf tf-venv`
+* Run: `rm -rf tf-venv`
 
 ### Example:
 ```bash
@@ -75,5 +82,6 @@ $ rm -rf tf-venv/
 
 ## Version info
 * If no version is provided, then the most recent version of terraform will be used.
-* If only a major version number is provided, e.g. `terraform-venv 0.12`, then the most recent version in that major release will be used.
-* If a major.minor version number is provided, e.g. `terraform-venv 0.12.31`, then that specific version will be used.
+* If only a major version number is provided, e.g. `terraform-venv 1`, then the most recent version in that major release will be used.
+* If a major.minor version number is provided, e.g. `terraform-venv 0.12`, then that specific version will be used.
+* If a major.minor.release version number is provided, e.g. `terraform-venv 0.12.31`, then that specific release will be used.
