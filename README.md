@@ -8,10 +8,17 @@ Creates a virtual terraform environment in your current directory, which allows 
 
 ## Instructions
 ### Installation
-1. Place the `terraform-venv` script from this repo in a directory in your `PATH`
-2. Set the execute-bit on this script: `chmod +x terraform-venv`
-3. (Optional) Also install `opentofu-venv` from this repo alongside it. It is a symlink to `terraform-venv`; you can
-   create it yourself with `ln -s terraform-venv opentofu-venv`
+From a clone of this repo, on Linux or macOS:
+```bash
+./install.sh            # installs into /usr/local/bin (uses sudo if needed)
+./install.sh --user     # installs into ~/.local/bin, no sudo
+./install.sh --dir DIR  # installs into DIR
+```
+This installs `terraform-venv` and `opentofu-venv` (a symlink to it). Re-run it after pulling to update.
+Add `--uninstall` (with the same `--user`/`--dir` option) to remove them.
+
+To install by hand instead, copy `terraform-venv` into a directory in your `PATH`, run `chmod +x terraform-venv`, and
+optionally `ln -s terraform-venv opentofu-venv` in that directory.
 
 ### Setting up
 1. Run: `terraform-venv <version>`
