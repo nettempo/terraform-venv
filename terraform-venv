@@ -20,14 +20,31 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+tool="terraform"
+case "$(basename "$0")" in
+  opentofu-venv*|tofu-venv*) tool="opentofu" ;;
+esac
+
 usage () {
-  echo "$0 [<version>]" 1>&2
-  echo "where: version is one of:" 1>&2
+  echo "$0 [-o|--opentofu] [<version>]" 1>&2
+  echo "where:" 1>&2
+  echo "   -o, --opentofu: install OpenTofu instead of Terraform (default when run as opentofu-venv)" 1>&2
+  echo "                   \"terraform\" is provided as an alias for \"tofu\" when activated" 1>&2
+  echo "   version is one of:" 1>&2
   echo "   {blank}:  use the most recent version" 1>&2
   echo "   {major version}: use the most recent version, e.g. \"0.13\" = use the most recent 0.13.X" 1>&2
   echo "   {major.minor version}: use the specific version, e.g. \"0.13.4\" = use version 0.13.4" 1>&2
   exit 1
 }
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -o|--opentofu|--tofu) tool="opentofu"; shift ;;
+    -h|--help)            usage ;;
+    -*)                   echo "Unknown option: $1" 1>&2; usage ;;
+    *)                    break ;;
+  esac
+done
 
 if [ -d tf-venv ];then
   echo "Directory tf-venv already exists" 1>&2
@@ -52,9 +69,36 @@ if [ -n "$1" ]; then
 else
   ver=
 fi
-tfver=$( curl -s https://releases.hashicorp.com/terraform/ | grep href | sed 's/.*>\(.*\)<.*/\1/' | grep terraform_${ver//./\\.} | head -1 | sed 's/terraform_//' )
+
+if [ "$tool" = "opentofu" ]; then
+  # Stable releases only, sorted numerically (the API list is not strictly ordered)
+  tofu_versions=$( curl -s https://get.opentofu.org/tofu/api.json | grep -o '"id": *"[^"]*"' | sed 's/.*"\([^"]*\)"$/\1/' \
+    | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -t. -k1,1n -k2,2n -k3,3n )
+  if [[ $ver =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    tfver=$( echo "${tofu_versions}" | grep -x "${ver//./\\.}" )
+  else
+    tfver=$( echo "${tofu_versions}" | grep "^${ver//./\\.}" | tail -1 )
+  fi
+  prefix="tofu"
+  binary="tofu"
+  label="TOFU"
+  base_url="https://github.com/opentofu/opentofu/releases/download/v${tfver}"
+else
+  # Stable releases only, sorted numerically
+  tf_versions=$( curl -s https://releases.hashicorp.com/terraform/ | grep href | sed 's/.*>\(.*\)<.*/\1/' | grep '^terraform_' | sed 's/terraform_//' \
+    | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -t. -k1,1n -k2,2n -k3,3n )
+  if [[ $ver =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    tfver=$( echo "${tf_versions}" | grep -x "${ver//./\\.}" )
+  else
+    tfver=$( echo "${tf_versions}" | grep "^${ver//./\\.}" | tail -1 )
+  fi
+  prefix="terraform"
+  binary="terraform"
+  label="TF"
+  base_url="https://releases.hashicorp.com/terraform/${tfver}"
+fi
 if [ -z "${tfver}" ]; then
-  echo "Unable to find terraform version" 1>&2
+  echo "Unable to find ${tool} version" 1>&2
   usage
   exit 1
 fi
@@ -86,12 +130,17 @@ fi
 
 mkdir tf-venv
 cd tf-venv || exit 1
-curl -s -O https://releases.hashicorp.com/terraform/"${tfver}"/terraform_"${tfver}"_SHA256SUMS
-curl -s -O https://releases.hashicorp.com/terraform/"${tfver}"/terraform_"${tfver}"_"${ost}"_"${architecture}".zip
-grep ${ost}_${architecture} terraform_"${tfver}"_SHA256SUMS | ${SHA256SUM_CHECK} || exit 1
-unzip -qq terraform_"${tfver}"_"${ost}"_"${architecture}".zip
+curl -s -L -O "${base_url}/${prefix}_${tfver}_SHA256SUMS"
+curl -s -L -O "${base_url}/${prefix}_${tfver}_${ost}_${architecture}.zip"
+grep "${ost}_${architecture}\.zip$" "${prefix}_${tfver}_SHA256SUMS" | ${SHA256SUM_CHECK} || exit 1
+unzip -qq "${prefix}_${tfver}_${ost}_${architecture}.zip" "${binary}*"
 
-chmod 755 terraform
+chmod 755 "${binary}"
+
+if [ "$tool" = "opentofu" ]; then
+  # Make "terraform" run tofu while this venv is active
+  ln -s tofu terraform 2>/dev/null || cp tofu terraform
+fi
 
 cat >tf-activate <<-EOF 2> /dev/null
 # The following code is based on the virtualenv activation code from python
@@ -173,7 +222,7 @@ else
     if [ -z "\${VIRTUAL_ENV_DISABLE_PROMPT:-}" ] ; then
         _TFOLD_VIRTUAL_PS1="\${PS1:-}"
         if [ "x(TF " != x ] ; then
-	        PS1="(TF ${tfver}) \${PS1:-}"
+	        PS1="(${label} ${tfver}) \${PS1:-}"
         else
           if [ "\$(basename \"\$TF_VIRTUAL_ENV\")" = "__" ] ; then
             # special case for Aspen magic directories
