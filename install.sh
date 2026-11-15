@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Installs terraform-venv and opentofu-venv on Linux and macOS.
+# Installs terraform-venv, opentofu-venv and tofu-venv on Linux and macOS.
 # (c) 2021-2026 NetTempo, Inc.
 # MIT License, see LICENSE for details
 
@@ -42,15 +42,16 @@ if [ ! -w "$check" ]; then
 fi
 
 if [ -n "$uninstall" ]; then
-  $SUDO rm -f "$dest/terraform-venv" "$dest/opentofu-venv" || exit 1
-  echo "Removed terraform-venv and opentofu-venv from $dest"
+  $SUDO rm -f "$dest/terraform-venv" "$dest/opentofu-venv" "$dest/tofu-venv" || exit 1
+  echo "Removed terraform-venv, opentofu-venv and tofu-venv from $dest"
   exit 0
 fi
 
 $SUDO mkdir -p "$dest" || exit 1
 $SUDO install -m 755 "$src_dir/terraform-venv" "$dest/terraform-venv" || exit 1
 $SUDO ln -sf terraform-venv "$dest/opentofu-venv" || exit 1
-echo "Installed terraform-venv and opentofu-venv into $dest"
+$SUDO ln -sf terraform-venv "$dest/tofu-venv" || exit 1
+echo "Installed terraform-venv, opentofu-venv and tofu-venv into $dest"
 
 case ":$PATH:" in
   *":$dest:"*) ;;
