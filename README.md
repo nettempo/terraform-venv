@@ -14,7 +14,7 @@ From a clone of this repo, on Linux or macOS:
 ./install.sh --user     # installs into ~/.local/bin, no sudo
 ./install.sh --dir DIR  # installs into DIR
 ```
-This installs `terraform-venv` and `opentofu-venv` (a symlink to it). Re-run it after pulling to update.
+This installs `terraform-venv`, plus `opentofu-venv` and `tofu-venv` (both symlinks to it). Re-run it after pulling to update.
 Add `--uninstall` (with the same `--user`/`--dir` option) to remove them.
 
 To install by hand instead, copy `terraform-venv` into a directory in your `PATH`, run `chmod +x terraform-venv`, and
@@ -93,7 +93,7 @@ $ rm -rf tf-venv/
 ## OpenTofu
 To use OpenTofu instead of Terraform, run either of:
 * `terraform-venv --opentofu [<version>]` (or `-o`)
-* `opentofu-venv [<version>]`
+* `opentofu-venv [<version>]` (or `tofu-venv [<version>]`)
 
 The `tofu` binary is installed in `tf-venv`, together with a `terraform` symlink to it. That means both `tofu` and
 `terraform` run OpenTofu while the venv is active (in scripts and Makefiles too). Activating and deactivating work
